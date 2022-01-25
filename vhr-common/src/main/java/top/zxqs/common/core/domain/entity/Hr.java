@@ -4,6 +4,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import top.zxqs.common.core.domain.BaseEntity;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -45,7 +46,7 @@ public class Hr extends BaseEntity {
     /** 最后登录IP */
     private String loginIp;
     /** 最后登录时间 */
-    private String loginDate;
+    private Date loginDate;
     /** Hr 所在部门 */
     private Dept dept;
     /** Hr 的角色 */
@@ -79,6 +80,18 @@ public class Hr extends BaseEntity {
 
     public String getName() {
         return name;
+    }
+
+    /**
+     * 是否是管理员账号
+     * @return
+     */
+    public boolean isAdmin(){
+        return isAdmin(this.hrId);
+    }
+
+    public static boolean isAdmin(Long HrId){
+        return HrId != null && 1L == HrId;
     }
 
     public void setName(String name) {
@@ -173,11 +186,11 @@ public class Hr extends BaseEntity {
         this.loginIp = loginIp;
     }
 
-    public String getLoginDate() {
+    public Date getLoginDate() {
         return loginDate;
     }
 
-    public void setLoginDate(String loginDate) {
+    public void setLoginDate(Date loginDate) {
         this.loginDate = loginDate;
     }
 

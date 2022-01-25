@@ -10,6 +10,9 @@ import top.zxqs.system.domain.Config;
 import top.zxqs.system.mapper.ConfigMapper;
 import top.zxqs.system.service.IConfigService;
 
+import javax.annotation.PostConstruct;
+import java.util.List;
+
 /**
  * @Author: zxq
  * @date: 2022-01-19 15:46
@@ -21,6 +24,14 @@ public class ConfigServiceImpl implements IConfigService {
 
     @Autowired
     private RedisCache redisCache;
+
+    /**
+     * 项目启动时，初始化参数到缓存
+     */
+    @PostConstruct
+    public void init(){
+        loadingConfigCache();
+    }
     /**
      * 获取验证码开关
      *
@@ -35,6 +46,17 @@ public class ConfigServiceImpl implements IConfigService {
         }
         // 将返回的结果转换为boolean
         return Convert.toBool(captchaOnOff);
+    }
+
+    /**
+     * 加载参数缓存数据
+     */
+    @Override
+    public void loadingConfigCache() {
+        List<Config> configList = configMapper.selectConfigList();
+        for(Config config : configList){
+            redisCache.setCacheObject(getCacheKey(config.getConfigKey()),config.getConfigValue());
+        }
     }
 
     /**

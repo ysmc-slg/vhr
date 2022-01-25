@@ -15,4 +15,9 @@ public interface IConfigService {
      * @return true开启，false关闭
      */
     public boolean selectCaptchaOnOff();
+
+    /**
+     * 加载参数缓存数据
+     */
+    void loadingConfigCache();
 }

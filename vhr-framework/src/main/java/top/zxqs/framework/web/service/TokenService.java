@@ -1,16 +1,24 @@
 package top.zxqs.framework.web.service;
 
+import eu.bitwalker.useragentutils.UserAgent;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import top.zxqs.common.constant.Constants;
 import top.zxqs.common.core.domain.model.LoginUser;
 import top.zxqs.common.core.redis.RedisCache;
+import top.zxqs.common.utils.ServletUtils;
 import top.zxqs.common.utils.StringUtils;
+import top.zxqs.common.utils.ip.AddressUtils;
+import top.zxqs.common.utils.ip.IpUtils;
+import top.zxqs.common.utils.uuid.IdUtils;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -115,20 +123,6 @@ public class TokenService {
         redisCache.setCacheObject(userKey, loginUser, expireTime, TimeUnit.MINUTES);
     }
 
-    /**
-     * 从令牌中获取数据声明
-     *
-     * @param token 令牌
-     * @return 数据声明
-     */
-    private Claims parseToken(String token)
-    {
-        return Jwts.parser()
-                .setSigningKey(secret)
-                .parseClaimsJws(token)
-                .getBody();
-    }
-
 
     /**
      * 删除用户身份信息
@@ -151,4 +145,64 @@ public class TokenService {
         return Constants.LOGIN_TOKEN_KEY + uuid;
     }
 
+    /**
+     * 创建令牌
+     * @param loginUser
+     * @return 令牌
+     */
+    public String createToken(LoginUser loginUser) {
+        // 此时 这个token 并不是真正返回到前端的 token，只是一个UUID 标识，用来获取缓存的用户信息
+        String token = IdUtils.fastUUID();
+        loginUser.setToken(token);
+        setUserAgent(loginUser);
+        refreshToken(loginUser);
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put(Constants.LOGIN_USER_KEY, token);
+        return createToken(claims);
+    }
+
+    /**
+     * 从数据声明生成令牌
+     *
+     * @param claims 数据声明
+     * @return 令牌
+     */
+    public String createToken(Map<String, Object> claims){
+        String token = Jwts.builder()
+                .setClaims(claims)
+                .signWith(SignatureAlgorithm.HS512, secret).compact();
+        return token;
+    }
+
+    /**
+     * 从令牌中获取数据声明
+     *
+     * @param token 令牌
+     * @return 数据声明
+     */
+    private Claims parseToken(String token)
+    {
+        return Jwts.parser()
+                .setSigningKey(secret)
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    /**
+     * 设置用户代理信息
+     * @param loginUser
+     */
+    public void setUserAgent(LoginUser loginUser) {
+        UserAgent userAgent = UserAgent.parseUserAgentString(ServletUtils.getRequest().getHeader("User-Agent"));
+        String ip = IpUtils.getIpAddr(ServletUtils.getRequest());
+        // 登录IP
+        loginUser.setIpaddr(ip);
+        // 登录地点
+        loginUser.setLoginLocation(AddressUtils.getRealAddressByIP(ip));
+        // 登录浏览器名称
+        loginUser.setBrowser(userAgent.getBrowser().getName());
+        // 操作系统
+        loginUser.setOs(userAgent.getOperatingSystem().getName());
+    }
 }

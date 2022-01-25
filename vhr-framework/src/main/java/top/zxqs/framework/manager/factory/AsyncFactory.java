@@ -11,6 +11,7 @@ import top.zxqs.common.utils.ip.AddressUtils;
 import top.zxqs.common.utils.ip.IpUtils;
 import top.zxqs.common.utils.spring.SpringUtils;
 import top.zxqs.system.domain.LoginInfo;
+import top.zxqs.system.service.ILoginInfoService;
 
 import java.util.TimerTask;
 
@@ -73,7 +74,7 @@ public class AsyncFactory
                     logininfor.setStatus(Constants.FAIL);
                 }
                 // 插入数据
-//                SpringUtils.getBean(ISysLogininforService.class).insertLogininfor(logininfor);
+                SpringUtils.getBean(ILoginInfoService.class).insertLogininfor(logininfor);
             }
         };
     }

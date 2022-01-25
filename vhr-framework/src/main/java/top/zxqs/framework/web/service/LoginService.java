@@ -7,15 +7,20 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import top.zxqs.common.constant.Constants;
+import top.zxqs.common.core.domain.entity.Hr;
 import top.zxqs.common.core.domain.model.LoginUser;
 import top.zxqs.common.core.redis.RedisCache;
 import top.zxqs.common.exception.ServiceException;
 import top.zxqs.common.exception.user.CaptchaExpireException;
 import top.zxqs.common.exception.user.UserPasswordNotMatchException;
+import top.zxqs.common.utils.DateUtils;
 import top.zxqs.common.utils.MessageUtils;
+import top.zxqs.common.utils.ServletUtils;
+import top.zxqs.common.utils.ip.IpUtils;
 import top.zxqs.framework.manager.AsyncManager;
 import top.zxqs.framework.manager.factory.AsyncFactory;
 import top.zxqs.system.service.IConfigService;
+import top.zxqs.system.service.IHrService;
 
 import javax.annotation.Resource;
 
@@ -33,6 +38,12 @@ public class LoginService {
 
     @Autowired
     private RedisCache redisCache;
+
+    @Autowired
+    private IHrService hrService;
+
+    @Autowired
+    private TokenService tokenService;
 
     /**
      * 登录验证
@@ -64,15 +75,14 @@ public class LoginService {
                 throw new ServiceException(e.getMessage());
             }
         }
-
+        // 记录登录日志
         AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_SUCCESS, MessageUtils.message("user.login.success")));
-        // 获取 LoginUser
-        LoginUser loginUser = (LoginUser) authentication.getPrincipal();
-//        recordLoginInfo(loginUser.getUserId());
-        // 生成token
-        //return tokenService.createToken(loginUser);
 
-        return null;
+        LoginUser loginUser = (LoginUser) authentication.getPrincipal();
+        // 更新HR 登录信息
+        recordLoginInfo(loginUser.getUserId());
+        // 生成token
+        return tokenService.createToken(loginUser);
     }
 
     /**
@@ -97,9 +107,20 @@ public class LoginService {
             AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL, MessageUtils.message("user.jcaptcha.error")));
             throw new CaptchaExpireException();
         }
-
-
     }
 
+    /**
+     * 记录登录信息
+     *
+     * @param hrId 登录ID
+     */
+    public void recordLoginInfo(Long hrId)
+    {
+        Hr hr = new Hr();
+        hr.setHrId(hrId);
+        hr.setLoginIp(IpUtils.getIpAddr(ServletUtils.getRequest()));
+        hr.setLoginDate(DateUtils.getNowDate());
+        hrService.updateHrProfile(hr);
+    }
 
 }

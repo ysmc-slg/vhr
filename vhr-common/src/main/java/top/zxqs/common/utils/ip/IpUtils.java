@@ -40,6 +40,7 @@ public class IpUtils
         return "0:0:0:0:0:0:0:1".equals(ip) ? "127.0.0.1" : EscapeUtil.clean(ip);
     }
 
+    // 是否是本机
     public static boolean internalIp(String ip)
     {
         byte[] addr = textToNumericFormatV4(ip);

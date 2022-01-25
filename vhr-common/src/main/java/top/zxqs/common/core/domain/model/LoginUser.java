@@ -72,6 +72,14 @@ public class LoginUser implements UserDetails
      */
     private Hr hr;
 
+    public Hr getHr() {
+        return hr;
+    }
+
+    public void setHr(Hr hr) {
+        this.hr = hr;
+    }
+
     public Long getUserId()
     {
         return userId;
