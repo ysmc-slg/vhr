@@ -8,12 +8,15 @@ import org.springframework.web.bind.annotation.RestController;
 import top.zxqs.common.constant.Constants;
 import top.zxqs.common.core.domain.AjaxResult;
 import top.zxqs.common.core.domain.entity.Hr;
+import top.zxqs.common.core.domain.entity.Menu;
 import top.zxqs.common.core.domain.model.LoginBody;
 import top.zxqs.common.core.domain.model.LoginUser;
 import top.zxqs.common.utils.SecurityUtils;
 import top.zxqs.framework.web.service.LoginService;
 import top.zxqs.framework.web.service.SysPermissionService;
+import top.zxqs.system.service.IMenuService;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -25,6 +28,9 @@ public class LoginController {
 
     @Autowired
     private LoginService loginService;
+
+    @Autowired
+    private IMenuService menuService;
 
     @Autowired
     private SysPermissionService permissionService;
@@ -54,5 +60,15 @@ public class LoginController {
         ajax.put("roles",rolePermission);
 
         return ajax;
+    }
+
+    @GetMapping("/getRouters")
+    public AjaxResult getRouters(){
+        Long userId = SecurityUtils.getUserId();
+        List<Menu> menus = menuService.selectMenuTreeByUserId(userId);
+
+//        AjaxResult.success(menuService.buildMenus(menus));
+        return null;
+
     }
 }

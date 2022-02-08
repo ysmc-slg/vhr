@@ -39,4 +39,21 @@
 			 left join role r on r.role_id = hr.role_id
 		where m.status = '0' and r.status = '0' and hr.hr_id = #{hrId}
     </select>
+
+    <select id="selectMenuTreeAll" resultMap="SysMenuResult">
+		select distinct m.menu_id, m.parent_id, m.menu_name, m.path, m.component, m.query, m.visible, m.status, ifnull(m.perms,'') as perms, m.is_frame, m.is_cache, m.menu_type, m.icon, m.order_num, m.create_time
+		from menu m where m.menu_type in ('M', 'C') and m.status = 0
+		order by m.parent_id, m.order_num
+	</select>
+
+    <select id="selectMenuTreeByUserId" resultMap="SysMenuResult">
+        select distinct m.menu_id, m.parent_id, m.menu_name, m.path, m.component, m.query, m.visible, m.status, ifnull(m.perms,'') as perms, m.is_frame, m.is_cache, m.menu_type, m.icon, m.order_num, m.create_time
+        from menu m
+             LEFT JOIN menu_role mr ON m.menu_id = mr.menu_id
+             LEFT JOIN hr_role hr ON mr.role_id = hr.role_id
+             LEFT JOIN role r ON hr.role_id = r.role_id
+             LEFT JOIN hr h ON hr.hr_id = h.hr_id
+        WHERE hr.hr_id = #{userId} AND m.menu_type in ('M', 'C') AND m.status = 0 AND r.`status` = 0
+        order by m.parent_id, m.order_num
+    </select>
 </mapper>
