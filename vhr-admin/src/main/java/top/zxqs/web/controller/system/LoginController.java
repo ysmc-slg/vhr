@@ -35,6 +35,11 @@ public class LoginController {
     @Autowired
     private SysPermissionService permissionService;
 
+    /**
+     * 登录接口
+     * @param loginBody
+     * @return
+     */
     @PostMapping("/login")
     public AjaxResult login(@RequestBody LoginBody loginBody){
         AjaxResult ajax = AjaxResult.success();
@@ -46,6 +51,10 @@ public class LoginController {
 
     }
 
+    /**
+     * 获取用户详细信息
+     * @return
+     */
     @GetMapping("/getInfo")
     public AjaxResult getInfo(){
         Hr hr = SecurityUtils.getLoginUser().getHr();
@@ -62,13 +71,15 @@ public class LoginController {
         return ajax;
     }
 
+    /**
+     * 获取路由
+     * @return
+     */
     @GetMapping("/getRouters")
     public AjaxResult getRouters(){
         Long userId = SecurityUtils.getUserId();
         List<Menu> menus = menuService.selectMenuTreeByUserId(userId);
 
-//        AjaxResult.success(menuService.buildMenus(menus));
-        return null;
-
+        return AjaxResult.success(menuService.buildMenus(menus));
     }
 }
