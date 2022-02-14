@@ -11,6 +11,7 @@ import top.zxqs.common.core.domain.entity.Hr;
 import top.zxqs.common.core.domain.model.LoginUser;
 import top.zxqs.common.core.redis.RedisCache;
 import top.zxqs.common.exception.ServiceException;
+import top.zxqs.common.exception.user.CaptchaException;
 import top.zxqs.common.exception.user.CaptchaExpireException;
 import top.zxqs.common.exception.user.UserPasswordNotMatchException;
 import top.zxqs.common.utils.DateUtils;
@@ -105,7 +106,7 @@ public class LoginService {
 
         if(!code.equalsIgnoreCase(captcha)){
             AsyncManager.me().execute(AsyncFactory.recordLogininfor(username, Constants.LOGIN_FAIL, MessageUtils.message("user.jcaptcha.error")));
-            throw new CaptchaExpireException();
+            throw new CaptchaException();
         }
     }
 
@@ -114,8 +115,7 @@ public class LoginService {
      *
      * @param hrId 登录ID
      */
-    public void recordLoginInfo(Long hrId)
-    {
+    public void recordLoginInfo(Long hrId){
         Hr hr = new Hr();
         hr.setHrId(hrId);
         hr.setLoginIp(IpUtils.getIpAddr(ServletUtils.getRequest()));
